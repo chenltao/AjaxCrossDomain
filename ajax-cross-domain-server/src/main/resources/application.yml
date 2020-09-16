@@ -1,0 +1,6 @@
+##thymeleaf页面模板配置
+spring:
+  mvc:
+    view:
+      prefix: /templates/
+      suffix: .html

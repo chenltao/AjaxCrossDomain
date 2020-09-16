@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script src="/js/jquery/jquery-1.11.3.min.js" type="text/javascript"></script>
+<script>
+    $(function(){
+        let domainArray = document.domain.split(".");
+        let domainLength = domainArray.length;
+        if (domainLength >= 2) {
+            document.domain = domainArray[domainLength-2]+"."+domainArray[domainLength-1];
+        }else{
+            document.domain = domainArray[0];
+        }
+    });
+
+
+</script>
+</body>
+</html>

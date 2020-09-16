@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="jasmine-3.6.0/jasmine.css">
+    <link rel="stylesheet" type="text/css" href="https://dss1.bdstatic.com/5aV1bjqh_Q23odCf/static/message/css/message_041c3208.css">
+    <script src="jasmine-3.6.0/jasmine.js"></script>
+    <script src="jasmine-3.6.0/jasmine-html.js"></script>
+    <script src="jasmine-3.6.0/boot.js"></script>
+    <script src="js/jquery-1.11.3.min.js"></script>
+</head>
+<body>
+
+<!--<a href="javascript:void(0)" onclick="get1()">发送get1请求</a>-->
+</body>
+
+<script>
+    setDomain();
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
+    //let base = "http://localhost:8080/test";
+    //let base = "http://localhost:8888/server/test";
+    let base = "http://b.com";
+    const proxyIframeId = "localHost8081ProxyIframe";
+    $(function () {
+        //let proxyIframe = createProxyIframe("localHost8081ProxyIframe", base+"/getProxyIframe");
+        describe("ajax跨域演示", function () {
+            //测试方法
+            /*test("get1请求",getJson);
+            test("jsonp请求",getJsonp);
+            test("get1请求 自定义 header",getCustomerHeader);*/
+            test("getCookie请求 with cookie",get1WithCookie);
+            //test("iframeGet1WithCookie with cookie",iframeGet1WithCookie);
+            //test("iframeGet1WithCookie with cookie", iframeGet1WithCookie);
+        });
+    });
+
+    //创建proxyIframe
+    function createProxyIframe(iframeId,iframeUrl){
+        let iframe = $("<iframe id='"+iframeId+"' style='display: none' src='"+iframeUrl+"'></iframe>");
+        //iframe加载完成后获取footer,注意这里要使用load的时间而不是ready，使用ready获取不到iframe中的$对象
+        iframe.load(function(){
+            //获取代理iframe的window对象
+            let id = '#'+iframeId
+            let $iframe = $(id);
+            //设置将iframe 的 $ 对象 赋值给 当前窗口
+            window[proxyIframeId]= $iframe[0].contentWindow.$;
+
+        });
+        $("body").append(iframe);
+        return iframe;
+    }
+
+
+    function test(name, ajaxMethod) {
+        it(name, function (done) {
+            let result = {};
+            ajaxMethod(result);
+            //由于是异步请求,使用setTimeout 来验证.
+            setTimeout(function () {
+                expect(result).toEqual({
+                    data: "get1 ok"
+                });
+                //校验完成通知 jasmin
+                done();
+            }, 100);
+
+        });
+    }
+
+    function getJson(result) {
+        $.getJSON(base + "/get1").then(function (jsonObject) {
+            console.log("get1请求 success", jsonObject);
+            Object.assign(result, jsonObject);
+            //result = jsonObject;
+        });
+    }
+
+    function getJsonp(result) {
+        $.ajax(base + "/get1", {
+            dataType: "jsonp",
+            jsonp: "callback1",
+            success: function (jsonObject) {
+                console.log("jsonp success", jsonObject);
+                Object.assign(result, jsonObject);
+            }
+        });
+    }
+
+    function getCustomerHeader(result) {
+        $.ajax(base + "/get1", {
+            headers: {"x-requested-with": "XMLHttpRequest","aa":"cc"},
+            dataType: "json",
+            success: function (jsonObject) {
+                console.log("get1请求 自定义头 success", jsonObject);
+                Object.assign(result, jsonObject);
+            }
+        });
+    }
+
+    function get1WithCookie(result) {
+        $.ajax(base + "/getCookie", {
+            xhrFields: {
+                withCredentials: true
+            },
+            headers:{"aa":"cc"},
+            dataType: "json",
+            /*beforeSend:function(xhr){
+                xhr.withCredentials = true;
+            },*/
+            success: function (jsonObject) {
+                console.log("get1请求 cookie success", jsonObject);
+                Object.assign(result, jsonObject);
+            }
+        });
+    }
+
+
+    function iframeGet1WithCookie(result) {
+        window[proxyIframeId].ajax(base + "/getCookie", {
+            xhrFields: {
+                withCredentials: true
+            },
+            dataType: "json",
+            success: function (jsonObject) {
+                console.log("iframeGet1WithCookie get1请求 cookie success", jsonObject);
+                Object.assign(result, jsonObject);
+            }
+        });
+    }
+
+    function setDomain(){
+        let domainArray = document.domain.split(".");
+        let domainLength = domainArray.length;
+        if (domainLength >= 2) {
+            document.domain = domainArray[domainLength-2]+"."+domainArray[domainLength-1];
+        }else{
+            document.domain = domainArray[0];
+        }
+    }
+
+
+</script>
+</html>
